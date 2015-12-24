@@ -10,8 +10,6 @@ group :development, :test do
   gem 'deep_merge'
   gem 'pry', :require => false
   gem 'simplecov', :require => false
-  gem 'parallel'
-  gem 'colorize'
 end
 
 if puppetversion = ENV['PUPPET_GEM_VERSION']

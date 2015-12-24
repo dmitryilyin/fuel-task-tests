@@ -1,15 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (2.2.8)
     coderay (1.1.0)
-    colorize (0.7.7)
     deep_merge (1.0.1)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    facter (2.4.4)
-      CFPropertyList (~> 2.2.6)
-    hiera (3.0.5)
+    facter (1.7.6)
+    hiera (1.3.4)
       json_pure
     json (1.8.3)
     json_pure (1.8.3)
@@ -20,15 +17,14 @@ GEM
     netaddr (1.5.0)
     openstack (1.1.2)
       json
-    parallel (1.6.1)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    puppet (4.3.1)
-      facter (> 2.0, < 4)
-      hiera (>= 2.0, < 4)
-      json_pure
+    puppet (3.4.3)
+      facter (~> 1.6)
+      hiera (~> 1.0)
+      rgen (~> 0.6.5)
     puppet-lint (0.3.2)
     puppet-syntax (2.0.0)
       rake
@@ -39,6 +35,7 @@ GEM
       rake
       rspec-puppet
     rake (10.4.2)
+    rgen (0.6.6)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
@@ -66,11 +63,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  colorize
   deep_merge
   netaddr
   openstack
-  parallel
   pry
   puppet
   puppet-lint (~> 0.3.2)

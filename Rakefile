@@ -1,0 +1,12 @@
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = '--deprecation-out deprecations.log --color --tty --format documentation'
+  if ENV['NOOP_TEST']
+    t.pattern = 'spec/*/' + ENV['NOOP_TEST'] + '_spec.rb'
+  else
+    t.pattern = 'spec/{*,*/*}/*_spec.rb'
+  end
+end
+
+task :default => :spec
