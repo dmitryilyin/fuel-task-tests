@@ -51,6 +51,11 @@ describe Noop::Config do
       expect(subject.dir_path_workspace).to be_a Pathname
       expect(subject.dir_path_workspace.to_s).to eq "#{root}/workspace"
     end
+
+    it 'dir_path_reports' do
+      expect(subject.dir_path_reports).to be_a Pathname
+      expect(subject.dir_path_reports.to_s).to eq "#{root}/reports"
+    end
   end
 
   context 'hiera' do

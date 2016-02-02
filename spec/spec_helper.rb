@@ -8,14 +8,14 @@ require 'puppetlabs_spec_helper/module_spec_helper'
 require_relative '../lib/noop/task'
 
 # Add fixture lib dirs to LOAD_PATH. Work-around for PUP-3336
-if Puppet.version < '4.0.0'
-  Dir["#{Noop.module_path}/*/lib"].entries.each do |lib_dir|
-    $LOAD_PATH << lib_dir
-  end
-end
+# if Puppet.version < '4.0.0'
+#   Dir["#{Noop::Config.dir_path_modules_local}/*/lib"].entries.each do |lib_dir|
+#     $LOAD_PATH << lib_dir
+#   end
+# end
 
 RSpec.configure do |c|
-  c.module_path = Noop::Config.dir_path_modules_local
+  c.module_path = Noop::Config.dir_path_modules_local.to_s
   c.expose_current_running_example_as :example
 
   c.before :each do
@@ -30,9 +30,3 @@ RSpec.configure do |c|
   c.mock_with :rspec
 
 end
-
-# Noop.coverage_simplecov if ENV['SPEC_COVERAGE']
-#
-# at_exit {
-#   Noop.coverage_rspec ENV['SPEC_ASTUTE_FILE_NAME'] if ENV['SPEC_COVERAGE']
-# }

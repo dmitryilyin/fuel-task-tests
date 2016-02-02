@@ -5,17 +5,15 @@ module Noop
       return @file_name_hiera if @file_name_hiera
       self.file_name_hiera = Noop::Utils.path_from_env 'SPEC_ASTUTE_FILE_NAME'
       return @file_name_hiera if @file_name_hiera
-      self.file_name_hiera = Noop::Config.default_hiera_file_name
+      self.file_name_hiera = Noop::Config.default_hiera_file_name unless
       @file_name_hiera
     end
-    alias :hiera :file_name_hiera
 
     def file_name_hiera=(value)
       return if value.nil?
       @file_name_hiera = Noop::Utils.convert_to_path value
       @file_name_hiera = @file_name_hiera.sub_ext '.yaml' if @file_name_hiera.extname == ''
     end
-    alias :hiera= :file_name_hiera=
 
     # @return [Pathname]
     def file_base_hiera
@@ -60,5 +58,80 @@ module Noop
       return unless override_file
       Noop::Config.dir_name_hiera_override + override_file.sub_ext('')
     end
+
+    def hiera_logger
+      if ENV['SPEC_PUPPET_DEBUG']
+        'console'
+      else
+        'noop'
+      end
+    end
+
+    def hiera_hierarchy
+      elements = []
+      elements << element_hiera_override.to_s if file_present_hiera_override?
+      elements << element_hiera.to_s if file_present_hiera?
+      elements << element_globals.to_s if file_present_globals?
+      elements
+    end
+
+    def hiera_config
+      {
+          :backends => [
+              'yaml',
+          ],
+          :yaml => {
+              :datadir => Noop::Config.dir_path_hiera.to_s,
+          },
+          :hierarchy => hiera_hierarchy,
+          :logger => hiera_logger,
+          :merge_behavior => :deeper,
+      }
+    end
+
+    def hiera_object
+      return @hiera_object if @hiera_object
+      @hiera_object = Hiera.new(:config => hiera_config)
+      Hiera.logger = hiera_config[:logger]
+      @hiera_object
+    end
+
+    def hiera_lookup(key, default = nil, resolution_type = :priority)
+      key = key.to_s
+      # def lookup(key, default, scope, order_override=nil, resolution_type=:priority)
+      hiera_object.lookup key, default, {}, nil, resolution_type
+    end
+
+    def hiera_hash(key, default = nil)
+      hiera_lookup key, default, :hash
+    end
+
+    def hiera_array(key, default = nil)
+      hiera_lookup key, default, :array
+    end
+
+    def hiera_structure(key, default = nil, separator = '/', resolution_type = :priority)
+      path_lookup = lambda do |data, path, default_value|
+        break default_value unless data
+        break data unless path.is_a? Array and path.any?
+        break default_value unless data.is_a? Hash or data.is_a? Array
+
+        key = path.shift
+        if data.is_a? Array
+          begin
+            key = Integer key
+          rescue ArgumentError
+            break default_value
+          end
+        end
+        path_lookup.call data[key], path, default_value
+      end
+
+      path = key.split separator
+      key = path.shift
+      data = hiera key, nil, resolution_type
+      path_lookup.call data, path, default
+    end
+
   end
 end

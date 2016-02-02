@@ -1,7 +1,7 @@
 module Noop
   class Task
     def initialize(spec, hiera=nil, facts=nil)
-      self.file_name_spec = spec
+      self.file_name_spec = Noop::Utils.convert_to_spec spec
       self.file_name_hiera = hiera
       self.file_name_facts = facts
       @parallel = false

@@ -5,7 +5,7 @@ module Noop
     def self.path_from_env(*names)
       names.each do |name|
         name = name.to_s
-        return convert_to_path ENV[name] if ENV[name] and File.exists? ENV[name]
+        return convert_to_path ENV[name] if ENV[name]
       end
       nil
     end

@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Noop
   class Task
     # @return [Pathname]
@@ -49,5 +51,27 @@ module Noop
       return unless file_path_facts_override
       file_path_facts_override.readable?
     end
+
+    def facts_hierarchy
+      file_paths = []
+      file_paths << file_path_facts if file_present_facts?
+      file_paths << file_path_facts_override if file_present_facts_override?
+      file_paths
+    end
+
+    def facts_data
+      facts_data = {}
+      facts_hierarchy.each do |file_path|
+        begin
+          file_data = YAML.load_file file_path
+          next unless file_data.is_a? Hash
+          facts_data.merge! file_data
+        rescue
+          next
+        end
+      end
+      facts_data
+    end
+
   end
 end

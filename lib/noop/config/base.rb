@@ -63,5 +63,11 @@ module Noop
       raise "Workspace '#{@dir_path_workspace}' is not a directory!" unless @dir_path_workspace.directory?
       @dir_path_workspace
     end
+
+    # @return [Pathname]
+    def self.dir_path_reports
+      return @dir_path_reports if @dir_path_reports
+      @dir_path_reports = dir_path_root + 'reports'
+    end
   end
 end

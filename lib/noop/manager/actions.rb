@@ -110,6 +110,7 @@ module Noop
     def run_all_tasks
       Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
         task.run
+        p task.report
         task
       end
     end
