@@ -2,6 +2,7 @@ require 'erb'
 
 module Noop
   class Task
+    # @return [String]
     def status_report(context)
       task = context.task
       template = <<-'eof'

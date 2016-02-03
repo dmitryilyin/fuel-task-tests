@@ -11,26 +11,31 @@ module Noop
 
       optparse = OptionParser.new do |opts|
         opts.separator 'Main options:'
-        opts.on('-j', '--jobs JOBS', 'Parallel run rapec jobs') do |jobs|
+        opts.on('-j', '--jobs JOBS', 'Parallel run RSpec jobs') do |jobs|
           @options.parallel_run = jobs.to_i
         end
-        opts.on('-g', '--globals', 'Generate globals files') do |jobs|
-          @options.parallel_run = jobs.to_i
+        opts.on('-g', '--globals', 'Update globals.yaml files') do |jobs|
+          @options.update_globals = true
+          ENV['SPEC_UPDATE_GLOBALS'] = 'YES'
+          options.filter_specs = [Noop::Config.spec_name_globals]
         end
         opts.on('-b', '--bundle', 'Setup Ruby environment using Bundle') do
           @options.bundle = true
-        end
-        opts.on('-A', '--failed_log FILE', 'Log failed specs to this file') do |file|
-          @options.failed_log = file
-        end
-        opts.on('-E', '--run_failed_log FILE', 'Run only failed specs from the failed log') do |file|
-          @options.run_failed_log = file
         end
         opts.on('-u', '--update-librarian', 'Run librarian-puppet update in the deployment directory prior to testing') do
           @options.update_librarian_puppet = true
         end
         opts.on('-r', '--reset-librarian', 'Reset puppet modules to librarian versions in the deployment directory prior to testing') do
           @options.reset_librarian_puppet = true
+        end
+        opts.on('-o', '--report_only_failed', 'Show only failed tasks and examples in the report') do
+          @options.report_only_failed = true
+        end
+        opts.on('-l', '--load_saved_reports', 'Read saved report JSON files from the previous run and show tasks report') do
+          @options.load_saved_reports = true
+        end
+        opts.on('-L', '--run_failed_tasks', 'Run the task that have previously failed again') do
+          @options.run_failed_tasks = true
         end
 
         opts.separator 'List options:'
@@ -60,13 +65,14 @@ module Noop
         opts.on('-f', '--facts FACTS1,FACTS2', Array, 'Run only these facts yamls. Example: "ubuntu.yaml,centos.yaml"') do |yamls|
           @options.filter_facts = import_yamls_list yamls
         end
-        opts.on('-e', '--examples STR1,STR2', Array, 'Run only these spec exemples. Example: "should compile"') do |examples|
+        opts.on('-e', '--examples STR1,STR2', Array, 'Run only these spec examples. Example: "should compile"') do |examples|
           @options.filter_examples = examples
         end
 
         opts.separator 'Debug options:'
         opts.on('-C', '--console', 'Run PRY console') do
           @options.console = true
+          ENV['SPEC_CONSOLE'] = 'YES'
         end
         opts.on('-d', '--debug', 'Show debug messages') do
           @options.debug = true
@@ -97,30 +103,30 @@ module Noop
         end
 
         opts.separator 'Spec options:'
-        opts.on('--catalog_show', 'Show catalog debug output') do
+        opts.on('--catalog_show', 'Show catalog content debug output') do
           ENV['SPEC_CATALOG_SHOW'] = 'YES'
         end
-        opts.on('--catalog_save', 'Save catalog to the files instead of comparing them with the current catalogs') do
-          ENV['SPEC_CATALOG_CHECK'] = 'save'
-        end
-        opts.on('--catalog_check', 'Check the saved catalog against the current one') do
-          ENV['SPEC_CATALOG_CHECK'] = 'check'
-        end
-        opts.on('--spec_generate', 'Generate specs for catalogs') do
-          ENV['SPEC_SPEC_GENERATE'] = 'YES'
-        end
+        # opts.on('--catalog_save', 'Save catalog to the files instead of comparing them with the current catalogs') do
+        #   ENV['SPEC_CATALOG_CHECK'] = 'save'
+        # end
+        # opts.on('--catalog_check', 'Check the saved catalog against the current one') do
+        #   ENV['SPEC_CATALOG_CHECK'] = 'check'
+        # end
+        # opts.on('--spec_generate', 'Generate specs for catalogs') do
+        #   ENV['SPEC_SPEC_GENERATE'] = 'YES'
+        # end
         opts.on('--spec_status', 'Show spec status blocks') do
           ENV['SPEC_SHOW_STATUS'] = 'YES'
         end
-        opts.on('--spec_coverage', 'Show spec coverage statistics') do
-          ENV['SPEC_COVERAGE'] = 'YES'
-        end
-        opts.on('--puppet_binary_files', 'Check if Puppet installs binary files') do
-          ENV['SPEC_PUPPET_BINARY_FILES'] = 'YES'
-        end
-        opts.on('--file_resources DIR', 'Save file resources to this dir') do |dir|
-          ENV['SPEC_SAVE_FILE_RESOURCES'] = dir
-        end
+        # opts.on('--spec_coverage', 'Show spec coverage statistics') do
+        #   ENV['SPEC_COVERAGE'] = 'YES'
+        # end
+        # opts.on('--puppet_binary_files', 'Check if Puppet installs binary files') do
+        #   ENV['SPEC_PUPPET_BINARY_FILES'] = 'YES'
+        # end
+        # opts.on('--file_resources DIR', 'Save file resources to this dir') do |dir|
+        #   ENV['SPEC_SAVE_FILE_RESOURCES'] = dir
+        # end
 
       end
       optparse.parse!
@@ -140,7 +146,7 @@ module Noop
     end
 
     def options_defaults(options)
-      options[:parallel_run] = 0
+      options[:parallel_run] = 10
       # options.filter_specs = ['roles/controller_spec.rb', 'apache/apache_spec.rb']
       # options.filter_facts = ['ubuntu.yaml']
       # options.filter_hiera = ['novanet-primary-controller.yaml']

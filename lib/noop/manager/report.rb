@@ -3,20 +3,50 @@ require 'colorize'
 
 module Noop
   class Manager
+    STATUS_STRING_LENGTH = 8
+
     def output_task_status(task)
-      line = status_string(task.success)
+      return if options[:report_only_failed] and task.success
+      line = task_status_string(task.success)
       line += "#{task.file_base_spec.to_s.ljust max_length_spec + 1}"
       line += "#{task.file_base_facts.to_s.ljust max_length_facts + 1}"
       line += "#{task.file_base_hiera.to_s.ljust max_length_hiera + 1}"
-      line
+      puts line
+      output_task_examples task
     end
 
-    def status_string(status)
-      return 'PENDING'.ljust(8).colorize :blue if status.nil?
+    def output_task_examples(task)
+      return unless task.report.is_a? Hash
+      examples = task.report['examples']
+      return unless examples.is_a? Array
+      examples.each do |example|
+        description = example['description']
+        status = example['status']
+        next unless description and status
+        next if options[:report_only_failed] and status == 'passed'
+        line = "  #{example_status_string status} #{description}"
+        exception_message = example.fetch('exception', {}).fetch('message', nil)
+        line += " (#{exception_message.colorize :cyan})" if exception_message
+        puts line
+      end
+    end
+
+    def task_status_string(status)
+      return 'PENDING'.ljust(STATUS_STRING_LENGTH).colorize :blue if status.nil?
       if status
-        'SUCCESS'.ljust(8).colorize :green
+        'SUCCESS'.ljust(STATUS_STRING_LENGTH).colorize :green
       else
-        'FAILED'.ljust(8).colorize :red
+        'FAILED'.ljust(STATUS_STRING_LENGTH).colorize :red
+      end
+    end
+
+    def example_status_string(status)
+      if status == 'passed'
+        status.ljust(STATUS_STRING_LENGTH).colorize :green
+      elsif status == 'failed'
+        status.ljust(STATUS_STRING_LENGTH).colorize :red
+      else
+        status.ljust(STATUS_STRING_LENGTH).colorize :blue
       end
     end
 
@@ -43,7 +73,7 @@ module Noop
 
     def task_report
       task_list.each do |task|
-        puts output_task_status task
+        output_task_status task
       end
     end
 
@@ -68,8 +98,8 @@ module Noop
 
     def check_paths
       paths = [
-          :dir_path_root,
           :dir_path_config,
+          :dir_path_root,
           :dir_path_task_spec,
           :dir_path_modules_local,
           :dir_path_tasks_local,
@@ -80,11 +110,12 @@ module Noop
           :dir_path_facts,
           :dir_path_facts_override,
           :dir_path_globals,
+          :dir_path_reports,
       ]
       max_length = paths.map { |p| p.to_s.length }.max
       paths.each do |path|
         directory = Noop::Config.send path
-        output "#{status_string directory.directory?} #{path.to_s.ljust max_length} #{directory}"
+        output "#{task_status_string directory.directory?} #{path.to_s.ljust max_length} #{directory}"
       end
     end
 

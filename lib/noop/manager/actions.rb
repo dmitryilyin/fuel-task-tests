@@ -110,7 +110,23 @@ module Noop
     def run_all_tasks
       Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
         task.run
-        p task.report
+        task
+      end
+    end
+
+    def run_failed_tasks
+      Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
+        next if task.success
+        task.success = nil
+        task.run
+        task
+      end
+    end
+
+    def load_task_reports
+      Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
+        task.file_load_report_json
+        task.determine_task_success
         task
       end
     end
@@ -122,11 +138,22 @@ module Noop
       end
     end
 
+    def have_failed_tasks?
+      task_list.any? do |task|
+        next if task.success.nil?
+        not task.success
+      end
+    end
+
+    def exit_with_error_code
+      exit 1 if have_failed_tasks?
+      exit 0
+    end
+
     def main
       if options[:console]
         require 'pry'
         binding.pry
-        exit(0)
       end
 
       if options[:list_missing]
@@ -143,6 +170,19 @@ module Noop
       list_facts_files if options[:list_facts]
       list_spec_files if options[:list_specs]
       list_task_files if options[:list_tasks]
+
+      if options[:run_failed_tasks]
+        load_task_reports
+        run_failed_tasks
+        task_report
+        exit_with_error_code
+      end
+
+      if options[:load_saved_reports]
+        load_task_reports
+        task_report
+        exit_with_error_code
+      end
 
       run_all_tasks unless options[:pretend]
       task_report

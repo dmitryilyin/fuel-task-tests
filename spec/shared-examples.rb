@@ -48,6 +48,12 @@ def run_test(manifest_file, *args)
   include_examples 'show_catalog' if ENV['SPEC_CATALOG_SHOW']
   include_examples 'console' if ENV['SPEC_CONSOLE']
 
+  begin
+    include_examples 'catalog'
+  rescue ArgumentError
+    true
+  end
+
   yield self if block_given?
 
 end

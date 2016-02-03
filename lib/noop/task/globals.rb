@@ -1,5 +1,6 @@
 module Noop
   class Task
+
     # @return [Pathname]
     def file_path_globals
       Noop::Config.dir_path_globals + file_name_hiera
@@ -9,6 +10,13 @@ module Noop
     def file_present_globals?
       return false unless file_path_globals
       file_path_globals.readable?
+    end
+
+    def write_file_globals(content)
+      File.open(file_path_globals.to_s, 'w') do |file|
+        file.write content
+      end
+      Noop::Utils.debug "Globals YAML saved to: '#{file_path_globals.to_s}'"
     end
 
     # @return [Pathname]

@@ -52,13 +52,15 @@ module Noop
       file_path_facts_override.readable?
     end
 
+    # @return [Array<String>]
     def facts_hierarchy
       file_paths = []
-      file_paths << file_path_facts if file_present_facts?
-      file_paths << file_path_facts_override if file_present_facts_override?
+      file_paths << file_path_facts.to_s if file_present_facts?
+      file_paths << file_path_facts_override.to_s if file_present_facts_override?
       file_paths
     end
 
+    # @return [Hash]
     def facts_data
       facts_data = {}
       facts_hierarchy.each do |file_path|

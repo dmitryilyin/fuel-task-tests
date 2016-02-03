@@ -9,14 +9,17 @@ module Noop
 
     attr_accessor :parallel
 
+    # @return [true,false]
     def parallel_run?
       parallel
     end
 
+    # @return [String]
     def to_s
       "Task[#{file_base_spec}]"
     end
 
+    # @return [Strong]
     def inspect
       message = "#{self}{"
       message += "Hiera: #{file_base_hiera} Facts: #{file_base_facts}"

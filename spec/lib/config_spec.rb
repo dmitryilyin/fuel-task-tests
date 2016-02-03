@@ -103,6 +103,26 @@ describe Noop::Config do
   end
 
   context 'globals' do
+    it 'spec_name_globals' do
+      expect(subject.spec_name_globals).to be_a Pathname
+      expect(subject.spec_name_globals.to_s).to eq 'globals/globals_spec.rb'
+    end
+
+    it 'spec_path_globals' do
+      expect(subject.spec_path_globals).to be_a Pathname
+      expect(subject.spec_path_globals.to_s).to eq "#{root}/spec/hosts/globals/globals_spec.rb"
+    end
+
+    it 'manifest_name_globals' do
+      expect(subject.manifest_name_globals).to be_a Pathname
+      expect(subject.manifest_name_globals.to_s).to eq 'globals/globals.pp'
+    end
+
+    it 'manifest_path_globals' do
+      expect(subject.manifest_path_globals).to be_a Pathname
+      expect(subject.manifest_path_globals.to_s).to eq "#{root}/tasks/globals/globals.pp"
+    end
+
     it 'dir_name_globals' do
       expect(subject.dir_name_globals).to be_a Pathname
       expect(subject.dir_name_globals.to_s).to eq 'globals'

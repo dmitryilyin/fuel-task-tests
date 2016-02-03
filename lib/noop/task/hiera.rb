@@ -3,7 +3,7 @@ module Noop
     # @return [Pathname]
     def file_name_hiera
       return @file_name_hiera if @file_name_hiera
-      self.file_name_hiera = Noop::Utils.path_from_env 'SPEC_ASTUTE_FILE_NAME'
+      self.file_name_hiera = Noop::Utils.path_from_env 'SPEC_ASTUTE_FILE_NAME', 'SPEC_HIERA_NAME'
       return @file_name_hiera if @file_name_hiera
       self.file_name_hiera = Noop::Config.default_hiera_file_name unless
       @file_name_hiera
@@ -59,6 +59,7 @@ module Noop
       Noop::Config.dir_name_hiera_override + override_file.sub_ext('')
     end
 
+    # @return [String]
     def hiera_logger
       if ENV['SPEC_PUPPET_DEBUG']
         'console'
@@ -67,6 +68,7 @@ module Noop
       end
     end
 
+    # @return [Array<String>]
     def hiera_hierarchy
       elements = []
       elements << element_hiera_override.to_s if file_present_hiera_override?
@@ -75,6 +77,7 @@ module Noop
       elements
     end
 
+    # @return [Hash]
     def hiera_config
       {
           :backends => [
@@ -89,6 +92,7 @@ module Noop
       }
     end
 
+    # @return [Hiera]
     def hiera_object
       return @hiera_object if @hiera_object
       @hiera_object = Hiera.new(:config => hiera_config)
@@ -96,20 +100,24 @@ module Noop
       @hiera_object
     end
 
+    # @return [Object]
     def hiera_lookup(key, default = nil, resolution_type = :priority)
       key = key.to_s
       # def lookup(key, default, scope, order_override=nil, resolution_type=:priority)
       hiera_object.lookup key, default, {}, nil, resolution_type
     end
 
+    # @return [Hash]
     def hiera_hash(key, default = nil)
       hiera_lookup key, default, :hash
     end
 
+    # @return [Array]
     def hiera_array(key, default = nil)
       hiera_lookup key, default, :array
     end
 
+    # @return [Object]
     def hiera_structure(key, default = nil, separator = '/', resolution_type = :priority)
       path_lookup = lambda do |data, path, default_value|
         break default_value unless data
