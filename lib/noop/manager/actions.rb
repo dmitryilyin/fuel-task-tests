@@ -109,16 +109,16 @@ module Noop
 
     def run_all_tasks
       Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
-        task.run
+        task.run unless options[:pretend]
         task
       end
     end
 
     def run_failed_tasks
       Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
-        next if task.success
-        task.success = nil
-        task.run
+        next if task.success?
+        task.status = :pending
+        task.run unless options[:pretend]
         task
       end
     end
@@ -126,12 +126,12 @@ module Noop
     def load_task_reports
       Parallel.map(task_list, :in_threads => options[:parallel_run]) do |task|
         task.file_load_report_json
-        task.determine_task_success
+        task.determine_task_status
         task
       end
     end
 
-    def list_tasks_without_manifests
+    def list_tasks_without_specs
       tasks_without_specs = find_tasks_without_specs.to_a
       if tasks_without_specs.any?
         Noop::Utils.error "There are tasks without specs: #{tasks_without_specs.join ', '}"
@@ -140,14 +140,20 @@ module Noop
 
     def have_failed_tasks?
       task_list.any? do |task|
-        next if task.success.nil?
-        not task.success
+        task.failed?
       end
     end
 
     def exit_with_error_code
       exit 1 if have_failed_tasks?
       exit 0
+    end
+
+    def save_xunit_report
+      File.open(options[:xunit_report], 'w') do |file|
+        file.puts xunit_report task_list
+      end
+      Noop::Utils.debug "xUnit XML report was saved to: #{options[:xunit_report]}"
     end
 
     def main
@@ -157,7 +163,15 @@ module Noop
       end
 
       if options[:list_missing]
-        list_tasks_without_manifests
+        list_tasks_without_specs
+      end
+
+      if options[:bundle_setup]
+        setup_bundle
+      end
+
+      if options[:update_librarian_puppet]
+        prepare_library
       end
 
       if options[:self_check]
@@ -184,8 +198,9 @@ module Noop
         exit_with_error_code
       end
 
-      run_all_tasks unless options[:pretend]
+      run_all_tasks
       task_report
+      save_xunit_report if options[:xunit_report]
     end
 
   end

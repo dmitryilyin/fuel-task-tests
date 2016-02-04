@@ -10,12 +10,16 @@ module Noop
 
     # @return [Pathname]
     def self.dir_path_root
-      return @dir_path_task_root if @dir_path_task_root
-      @dir_path_task_root = dir_path_config.parent.parent.parent
+      return @dir_path_root if @dir_path_root
+      @dir_path_root = Noop::Utils.path_from_env 'SPEC_ROOT_DIR'
+      return @dir_path_root if @dir_path_root
+      @dir_path_root = dir_path_config.parent.parent.parent
     end
 
     # @return [Pathname]
     def self.dir_path_task_spec
+      return @dir_path_task_spec if @dir_path_task_spec
+      @dir_path_task_spec = Noop::Utils.path_from_env 'SPEC_SPEC_DIR'
       return @dir_path_task_spec if @dir_path_task_spec
       @dir_path_task_spec = dir_path_root + 'spec' + 'hosts'
     end
@@ -30,6 +34,8 @@ module Noop
 
     # @return [Pathname]
     def self.dir_path_tasks_local
+      return @dir_path_tasks_local if @dir_path_tasks_local
+      @dir_path_tasks_local = Noop::Utils.path_from_env 'SPEC_TASK_DIR'
       return @dir_path_tasks_local if @dir_path_tasks_local
       @dir_path_tasks_local = dir_path_root + 'tasks'
     end
@@ -48,6 +54,8 @@ module Noop
 
     # @return [Pathname]
     def self.dir_path_deployment
+      return @dir_path_deployment if @dir_path_deployment
+      @dir_path_deployment = Noop::Utils.path_from_env 'SPEC_DEPLOYMENT_DIR'
       return @dir_path_deployment if @dir_path_deployment
       @dir_path_deployment = dir_path_root + 'deployment'
     end

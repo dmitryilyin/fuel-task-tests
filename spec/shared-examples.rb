@@ -29,7 +29,9 @@ end
 
 def run_test(manifest_file, *args)
   file_name_spec =  manifest_file
+  Noop::Config.log.progname = 'noop_spec'
   task_object = Noop::Task.new file_name_spec
+  Noop::Utils.debug "RSPEC: #{task_object.inspect}"
 
   before(:all) do
     task_object.setup_overrides

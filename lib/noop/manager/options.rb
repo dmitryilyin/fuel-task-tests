@@ -14,13 +14,17 @@ module Noop
         opts.on('-j', '--jobs JOBS', 'Parallel run RSpec jobs') do |jobs|
           @options.parallel_run = jobs.to_i
         end
-        opts.on('-g', '--globals', 'Update globals.yaml files') do |jobs|
+        opts.on('-g', '--globals', 'Run all globals tasks and update saved globals YAML files') do |jobs|
           @options.update_globals = true
           ENV['SPEC_UPDATE_GLOBALS'] = 'YES'
           options.filter_specs = [Noop::Config.spec_name_globals]
         end
-        opts.on('-b', '--bundle', 'Setup Ruby environment using Bundle') do
-          @options.bundle = true
+        opts.on('-b', '--bundle_setup', 'Setup Ruby environment using Bundle') do
+          @options.bundle_setup = true
+        end
+        opts.on('-B', '--bundle_exec', 'Use "bundle exec" to run rspec') do
+          @options.bundle_exec = true
+          ENV['SPEC_BUNDLE_EXEC'] = 'YES'
         end
         opts.on('-u', '--update-librarian', 'Run librarian-puppet update in the deployment directory prior to testing') do
           @options.update_librarian_puppet = true
@@ -37,6 +41,12 @@ module Noop
         opts.on('-L', '--run_failed_tasks', 'Run the task that have previously failed again') do
           @options.run_failed_tasks = true
         end
+        opts.on('-M', '--list_missing', 'List all task manifests without a spec file') do
+          @options.list_missing = true
+        end
+        opts.on('-x', '--xunit_report FILE', 'Save report in xUnit format to this file') do |file|
+          @options.xunit_report = file
+        end
 
         opts.separator 'List options:'
         opts.on('-Y', '--list_hiera', 'List all hiera yaml files') do
@@ -51,9 +61,6 @@ module Noop
         opts.on('-T', '--list_tasks', 'List all task manifest files') do
           @options.list_tasks = true
         end
-        opts.on('-M', '--list_missing', 'List all task manifests without a spec file') do
-          @options.list_missing = true
-        end
 
         opts.separator 'Filter options:'
         opts.on('-s', '--specs SPEC1,SPEC2', Array, 'Run only these spec files. Example: "hosts/hosts_spec.rb,apache/apache_spec.rb"') do |specs|
@@ -65,9 +72,9 @@ module Noop
         opts.on('-f', '--facts FACTS1,FACTS2', Array, 'Run only these facts yamls. Example: "ubuntu.yaml,centos.yaml"') do |yamls|
           @options.filter_facts = import_yamls_list yamls
         end
-        opts.on('-e', '--examples STR1,STR2', Array, 'Run only these spec examples. Example: "should compile"') do |examples|
-          @options.filter_examples = examples
-        end
+        # opts.on('-e', '--examples STR1,STR2', Array, 'Run only these spec examples. Example: "should compile"') do |examples|
+        #   @options.filter_examples = examples
+        # end
 
         opts.separator 'Debug options:'
         opts.on('-C', '--console', 'Run PRY console') do
@@ -78,21 +85,31 @@ module Noop
           @options.debug = true
           ENV['SPEC_PUPPET_DEBUG'] = 'YES'
         end
+        opts.on('-D', '--debug_log FILE', 'Write debug messages to this files') do |file|
+          @options.debug_log = file
+          ENV['SPEC_DEBUG_LOG'] = file
+        end
         opts.on('-c', '--self-check', 'Perform self-check procedures') do
           @options.self_check = true
         end
-        opts.on('-p', '--pretend', 'Show which specs will be run without actually running them') do
+        opts.on('-p', '--pretend', 'Show which tasks will be run without actually running them') do
           @options.pretend = true
         end
 
         opts.separator 'Path options:'
+        opts.on('--dir_root DIR', 'Path to the test root folder') do |dir|
+          ENV['SPEC_ROOT_DIR'] = dir
+        end
+        opts.on('--dir_deployment DIR', 'Path to the test deployment folder') do |dir|
+          ENV['SPEC_DEPLOYMENT_DIR'] = dir
+        end
         opts.on('--dir_hiera_yamls DIR', 'Path to the folder with hiera files') do |dir|
           ENV['SPEC_YAML_DIR'] = dir
         end
         opts.on('--dir_facts_yamls DIR', 'Path to the folder with facts yaml files') do |dir|
           ENV['SPEC_FACTS_DIR'] = dir
         end
-        opts.on('--dir_spec_files DIR', 'Path to the folder with task spec files') do |dir|
+        opts.on('--dir_spec_files DIR', 'Path to the folder with task spec files (changing this may break puppet-rspec)') do |dir|
           ENV['SPEC_SPEC_DIR'] = dir
         end
         opts.on('--dir_task_files DIR', 'Path to the folder with task manifest files') do |dir|
@@ -146,10 +163,7 @@ module Noop
     end
 
     def options_defaults(options)
-      options[:parallel_run] = 10
-      # options.filter_specs = ['roles/controller_spec.rb', 'apache/apache_spec.rb']
-      # options.filter_facts = ['ubuntu.yaml']
-      # options.filter_hiera = ['novanet-primary-controller.yaml']
+      options[:parallel_run] = 0
     end
 
   end

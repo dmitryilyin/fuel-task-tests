@@ -56,8 +56,9 @@ module Noop
       result
     end
 
-    def self.run(command)
-      puts "Run: #{command}"
+    def self.run(*args)
+      debug "CMD: #{args.inspect}"
+      system *args
     end
 
     def self.debug(message)

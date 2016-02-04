@@ -2,12 +2,61 @@ require 'spec_helper'
 require 'noop/task'
 
 describe Noop::Task do
+  before(:each) do
+    allow(Noop::Utils).to receive(:warning)
+  end
+
   subject do
     Noop::Task.new 'my/test_spec.rb'
   end
 
-  let (:repo_root) do
-    File.absolute_path File.join File.dirname(__FILE__), '..', '..', '..', '..'
+  let (:root) do
+    File.absolute_path File.join File.dirname(__FILE__), '..', '..'
+  end
+
+  context 'base' do
+    it 'should have status' do
+      is_expected.to respond_to :status
+    end
+
+    it 'should have success?' do
+      subject.status = :pending
+      is_expected.not_to be_success
+      subject.status = :success
+      is_expected.to be_success
+    end
+
+    it 'should have pending?' do
+      subject.status = :failed
+      is_expected.not_to be_pending
+      subject.status = :pending
+      is_expected.to be_pending
+    end
+
+    it 'should have failed?' do
+      subject.status = :success
+      is_expected.not_to be_failed
+      subject.status = :failed
+      is_expected.to be_failed
+    end
+
+    it 'should have parallel_run?' do
+      is_expected.not_to be_parallel_run
+      subject.parallel = true
+      is_expected.to be_parallel_run
+    end
+
+    it 'should have valid?' do
+      is_expected.not_to be_valid
+    end
+
+    it 'should have to_s' do
+      expect(subject.to_s).to eq 'Task[my/test]'
+    end
+
+    it 'should have inspect' do
+      expect(subject.inspect).to eq 'Task[Task: my/test.pp Spec: my/test_spec.rb Hiera: novanet-primary-controller.yaml Facts: ubuntu.yaml Status: pending]'
+    end
   end
 
   context 'spec' do
@@ -30,17 +79,17 @@ describe Noop::Task do
 
     it 'has file_name_manifest' do
       expect(subject.file_name_manifest).to be_a Pathname
-      expect(subject.file_name_manifest.to_s).to eq "my/test.pp"
+      expect(subject.file_name_manifest.to_s).to eq 'my/test.pp'
     end
 
     it 'has file_path_manifest' do
       expect(subject.file_path_manifest).to be_a Pathname
-      expect(subject.file_path_manifest.to_s).to eq "#{repo_root}/deployment/puppet/osnailyfacter/modular/my/test.pp"
+      expect(subject.file_path_manifest.to_s).to eq "#{root}/tasks/my/test.pp"
     end
 
     it 'has file_path_spec' do
       expect(subject.file_path_spec).to be_a Pathname
-      expect(subject.file_path_spec.to_s).to eq "#{repo_root}/tests/noop/spec/hosts/my/test_spec.rb"
+      expect(subject.file_path_spec.to_s).to eq "#{root}/spec/hosts/my/test_spec.rb"
     end
   end
 
@@ -64,17 +113,17 @@ describe Noop::Task do
 
     it 'has file_path_facts' do
       expect(subject.file_path_facts).to be_a Pathname
-      expect(subject.file_path_facts.to_s).to eq "#{repo_root}/tests/noop/facts/ubuntu.yaml"
+      expect(subject.file_path_facts.to_s).to eq "#{root}/facts/ubuntu.yaml"
     end
 
     it 'has file_name_facts_override' do
       expect(subject.file_name_facts_override).to be_a Pathname
-      expect(subject.file_name_facts_override.to_s).to eq "my-test.yaml"
+      expect(subject.file_name_facts_override.to_s).to eq 'my-test.yaml'
     end
 
     it 'has file_path_facts_override' do
       expect(subject.file_path_facts_override).to be_a Pathname
-      expect(subject.file_path_facts_override.to_s).to eq "#{repo_root}/tests/noop/facts/my-test.yaml"
+      expect(subject.file_path_facts_override.to_s).to eq "#{root}/facts/override/my-test.yaml"
     end
   end
 
@@ -108,22 +157,22 @@ describe Noop::Task do
 
     it 'has file_path_hiera' do
       expect(subject.file_path_hiera).to be_a Pathname
-      expect(subject.file_path_hiera.to_s).to eq "#{repo_root}/tests/noop/hiera/novanet-primary-controller.yaml"
+      expect(subject.file_path_hiera.to_s).to eq "#{root}/hiera/novanet-primary-controller.yaml"
     end
 
     it 'has file_name_hiera_override' do
       expect(subject.file_name_hiera_override).to be_a Pathname
-      expect(subject.file_name_hiera_override.to_s).to eq "my-test.yaml"
+      expect(subject.file_name_hiera_override.to_s).to eq 'my-test.yaml'
     end
 
     it 'has file_path_hiera_override' do
       expect(subject.file_path_hiera_override).to be_a Pathname
-      expect(subject.file_path_hiera_override.to_s).to eq "#{repo_root}/tests/noop/hiera/override/my-test.yaml"
+      expect(subject.file_path_hiera_override.to_s).to eq "#{root}/hiera/override/my-test.yaml"
     end
 
     it 'has element_hiera_override' do
       expect(subject.element_hiera_override).to be_a Pathname
-      expect(subject.element_hiera_override.to_s).to eq "override/my-test"
+      expect(subject.element_hiera_override.to_s).to eq 'override/my-test'
     end
 
   end
@@ -131,22 +180,22 @@ describe Noop::Task do
   context 'globals' do
     it 'has file_path_globals' do
       expect(subject.file_path_globals).to be_a Pathname
-      expect(subject.file_path_globals.to_s).to eq "#{repo_root}/tests/noop/hiera/globals/novanet-primary-controller.yaml"
+      expect(subject.file_path_globals.to_s).to eq "#{root}/hiera/globals/novanet-primary-controller.yaml"
     end
 
     it 'has file_name_globals' do
       expect(subject.file_name_globals).to be_a Pathname
-      expect(subject.file_name_globals.to_s).to eq "novanet-primary-controller.yaml"
+      expect(subject.file_name_globals.to_s).to eq 'novanet-primary-controller.yaml'
     end
 
     it 'has file_base_globals' do
       expect(subject.file_base_globals).to be_a Pathname
-      expect(subject.file_base_globals.to_s).to eq "novanet-primary-controller"
+      expect(subject.file_base_globals.to_s).to eq 'novanet-primary-controller'
     end
 
     it 'has element_globals' do
       expect(subject.element_globals).to be_a Pathname
-      expect(subject.element_globals.to_s).to eq "globals/novanet-primary-controller"
+      expect(subject.element_globals.to_s).to eq 'globals/novanet-primary-controller'
     end
   end
 

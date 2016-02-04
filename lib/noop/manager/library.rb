@@ -11,7 +11,7 @@ module Noop
       Noop::Utils.error "No #{Noop::Config.dir_path_task_spec} directory!" unless Noop::Config.dir_path_task_spec.directory?
       Noop::Config.dir_path_task_spec.find do |spec_file|
         next unless spec_file.file?
-        next unless spec_file.fnmatch? '*_spec.rb'
+        next unless spec_file.to_s.end_with? '_spec.rb'
         @spec_file_names << spec_file.relative_path_from(Noop::Config.dir_path_task_spec)
       end
       @spec_file_names
@@ -24,7 +24,7 @@ module Noop
       Noop::Utils.error "No #{Noop::Config.dir_path_hiera} directory!" unless Noop::Config.dir_path_hiera.directory?
       Noop::Config.dir_path_hiera.find do |hiera_name|
         next unless hiera_name.file?
-        next unless hiera_name.fnmatch? '*.yaml'
+        next unless hiera_name.to_s.end_with? '.yaml'
         base_dir = hiera_name.dirname.basename
         next if base_dir == Noop::Config.dir_name_hiera_override
         next if base_dir == Noop::Config.dir_name_globals
@@ -40,7 +40,7 @@ module Noop
       Noop::Utils.error "No #{Noop::Config.dir_path_facts} directory!" unless Noop::Config.dir_path_facts.directory?
       Noop::Config.dir_path_facts.find do |facts_name|
         next unless facts_name.file?
-        next unless facts_name.fnmatch? '*.yaml'
+        next unless facts_name.to_s.end_with? '.yaml'
         next if facts_name.dirname.basename == Noop::Config.dir_name_facts_override
         @facts_file_names << facts_name.relative_path_from(Noop::Config.dir_path_facts)
       end
@@ -54,7 +54,7 @@ module Noop
       Noop::Utils.error "No #{Noop::Config.dir_path_tasks_local} directory!" unless Noop::Config.dir_path_tasks_local.directory?
       Noop::Config.dir_path_tasks_local.find do |task_name|
         next unless task_name.file?
-        next unless task_name.fnmatch? '*.pp'
+        next unless task_name.to_s.end_with? '.pp'
         @task_file_names << task_name.relative_path_from(Noop::Config.dir_path_tasks_local)
       end
       @task_file_names

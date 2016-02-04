@@ -3,36 +3,45 @@ require 'json'
 module Noop
   class Task
     def run
-      return unless success.nil?
+      return unless pending?
       self.pid = Process.pid
       self.thread = Thread.current.object_id
       Noop::Utils.debug "RUN: #{self.inspect}"
       file_remove_report_json
       rspec_command_run
       file_load_report_json
-      determine_task_success
+      determine_task_status
       Noop::Utils.debug "FINISH: #{self.inspect}"
-      success
+      status
     end
 
     def file_load_report_json
       self.report = file_data_report_json
     end
 
-    def determine_task_success
+    def set_status_value(value)
+      if value.is_a? TrueClass
+        self.status = :success
+      elsif value.is_a? FalseClass
+        self.status = :failed
+      else
+        self.status = :pending
+      end
+    end
+
+    def determine_task_status
       if report.is_a? Hash
         failures = report.fetch('summary', {}).fetch('failure_count', nil)
         if failures.is_a? Numeric
-          self.success = failures == 0
+          set_status_value(failures == 0)
         end
       end
-      self.success = command_success if success.nil?
-      success
+      status
     end
 
     # @return [Pathname]
     def file_name_report_json
-      Noop::Utils.convert_to_path "#{file_base_hiera}_#{file_base_facts}_#{file_name_task_extension.sub_ext ''}.json"
+      Noop::Utils.convert_to_path "#{file_name_task_extension.sub_ext ''}_#{file_base_hiera}_#{file_base_facts}.json"
     end
 
     # @return [Pathname]
@@ -63,21 +72,26 @@ module Noop
       file_path_report_json.exist?
     end
 
+    def rspec_options
+      options = '--color --tty --backtrace'
+      options += ' --format documentation' unless parallel_run?
+      options
+    end
+
     # @return [true,false]
     def rspec_command_run
       environment = {
           'SPEC_HIERA_NAME' => file_name_hiera.to_s,
           'SPEC_FACTS_NAME' => file_name_facts.to_s,
       }
-      command = "rspec #{file_path_spec.to_s} --format json --out #{file_path_report_json.to_s}"
-      # Noop::Utils.debug command
-      self.command_success = system environment, command
+      command = "rspec #{file_path_spec.to_s} #{rspec_options} --format json --out #{file_path_report_json.to_s}"
+      command = "bundle exec #{command}" if ENV['SPEC_BUNDLE_EXEC']
+      Dir.chdir Noop::Config.dir_path_root
+      success = Noop::Utils.run environment, command
+      set_status_value success
+      success
     end
 
-    attr_accessor :pid
-    attr_accessor :thread
-    attr_accessor :success
-    attr_accessor :command_success
     attr_accessor :report
   end
 end
