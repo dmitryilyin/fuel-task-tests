@@ -106,6 +106,7 @@ module Noop
       # def lookup(key, default, scope, order_override=nil, resolution_type=:priority)
       hiera_object.lookup key, default, {}, nil, resolution_type
     end
+    alias :hiera :hiera_lookup
 
     # @return [Hash]
     def hiera_hash(key, default = nil)

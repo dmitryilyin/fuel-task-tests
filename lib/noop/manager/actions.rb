@@ -55,10 +55,17 @@ module Noop
       filter.include? hiera
     end
 
+    def skip_globals(file_name_spec)
+      return false unless file_name_spec == Noop::Config.spec_name_globals
+      return true unless options[:filter_specs]
+      not spec_included? file_name_spec
+    end
+
     def task_list
       return @task_list if @task_list
       @task_list = []
       spec_file_names.each do |file_name_spec|
+        next if skip_globals file_name_spec
         next unless spec_included? file_name_spec
         get_spec_runs(file_name_spec).each do |run|
           next unless run[:hiera] and run[:facts]
@@ -196,12 +203,14 @@ module Noop
       if options[:load_saved_reports]
         load_task_reports
         task_report
+        save_xunit_report if options[:xunit_report]
         exit_with_error_code
       end
 
       run_all_tasks
       task_report
       save_xunit_report if options[:xunit_report]
+      exit_with_error_code
     end
 
   end
