@@ -7,7 +7,21 @@ module Noop
       setup_manifest
     end
 
+    def setup_manifest
+      RSpec.configuration.manifest = file_path_manifest.to_s
+      RSpec.configuration.module_path = Noop::Config.dir_path_modules_local.to_s
+      RSpec.configuration.manifest_dir = Noop::Config.dir_path_tasks_local.to_s
+    end
+
     def hiera_config_override
+      class << HieraPuppet
+        def hiera
+          @hiera ||= Hiera.new(:config => hiera_config)
+          Hiera.logger = 'noop'
+          @hiera
+        end
+      end
+
       class << Hiera::Config
         attr_accessor :config
 
@@ -50,10 +64,6 @@ module Noop
               :hiera_config => '/dev/null',
           }
       )
-    end
-
-    def setup_manifest
-      RSpec.configuration.manifest = file_path_manifest.to_s
     end
 
   end

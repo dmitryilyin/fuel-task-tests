@@ -57,7 +57,7 @@ module Noop
     end
 
     def self.run(*args)
-      debug "CMD: #{args.inspect}"
+      debug "CMD: #{args.inspect} (PWD: #{Dir.getwd})"
       system *args
     end
 

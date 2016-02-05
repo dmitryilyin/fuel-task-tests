@@ -11,8 +11,12 @@ module Noop
     def self.dir_path_hiera
       return @dir_path_hiera if @dir_path_hiera
       @dir_path_hiera = Noop::Utils.path_from_env 'SPEC_HIERA_DIR', 'SPEC_YAML_DIR'
-      return @dir_path_hiera if @dir_path_hiera
-      @dir_path_hiera = dir_path_root + dir_name_hiera
+      @dir_path_hiera = dir_path_root + dir_name_hiera unless @dir_path_hiera
+      begin
+        @dir_path_hiera = @dir_path_hiera.realpath
+      rescue
+        @dir_path_hiera
+      end
     end
 
     # @return [Pathname]

@@ -5,18 +5,20 @@ group :development, :test do
   gem 'puppet-lint', '~> 0.3.2'
   gem 'rspec-puppet', '~> 2.2.0'
   gem 'rspec-puppet-utils', '~> 2.0.0'
-  gem 'openstack', :require => false
+  gem 'openstack'
   gem 'netaddr'
   gem 'deep_merge'
-  gem 'pry', :require => false
-  gem 'simplecov', :require => false
+  gem 'pry'
+  gem 'simplecov'
+  gem 'puppet-spec'
+  gem 'colorize'
+  gem 'parallel'
 end
 
-if puppetversion = ENV['PUPPET_GEM_VERSION']
-  gem 'puppet', puppetversion, :require => false
+if ENV['PUPPET_GEM_VERSION']
+  gem 'puppet', ENV['PUPPET_GEM_VERSION']
 else
-  gem 'puppet', :require => false
+  gem 'puppet', '3.4.3'
 end
 
 # vim:ft=ruby
-

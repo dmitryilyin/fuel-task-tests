@@ -6,8 +6,8 @@ module Noop
     def status_report(context)
       task = context.task
       template = <<-'eof'
-Facts:    <%= task.file_name_facts %>
-Hiera:    <%= task.file_name_hiera %>
+Facts:    <%= task.file_path_facts %>
+Hiera:    <%= task.file_path_hiera %>
 Spec:     <%= task.file_path_spec %>
 Manifest: <%= task.file_path_manifest %>
 

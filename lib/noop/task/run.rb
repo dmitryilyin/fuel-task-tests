@@ -73,7 +73,7 @@ module Noop
     end
 
     def rspec_options
-      options = '--color --tty --backtrace'
+      options = '--color --tty'
       options += ' --format documentation' unless parallel_run?
       options
     end

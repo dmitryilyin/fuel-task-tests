@@ -238,6 +238,7 @@ Total tasks to run: <%= task_list.count %>
 
     def check_paths
       paths = [
+          :dir_path_config,
           :dir_path_root,
           :dir_path_task_spec,
           :dir_path_modules_local,

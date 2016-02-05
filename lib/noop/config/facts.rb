@@ -11,8 +11,12 @@ module Noop
     def self.dir_path_facts
       return @dir_path_facts if @dir_path_facts
       @dir_path_facts = Noop::Utils.path_from_env 'SPEC_FACTS_DIR'
-      return @dir_path_facts if @dir_path_facts
-      @dir_path_facts = dir_path_root + dir_name_facts
+      @dir_path_facts = dir_path_root + dir_name_facts unless @dir_path_facts
+      begin
+        @dir_path_facts = @dir_path_facts.realpath
+      rescue
+        @dir_path_facts
+      end
     end
 
     # @return [Pathname]

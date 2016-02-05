@@ -118,16 +118,18 @@ module Noop
         begin
           data = YAML.load_file(Noop::Config.dir_path_hiera + hiera_file)
           next unless data.is_a? Hash
-          nodes = data['nodes']
-          uid = data['uid']
-          next unless nodes.is_a? Array
-          next unless uid
-          roles = Set.new
-          nodes.each do |node|
-            next unless node['uid'] == uid
-            next unless node['role']
-            roles.add node['role']
+          fqdn = data['fqdn']
+          next unless fqdn
+          nodes = data.fetch('network_metadata', {}).fetch('nodes', nil)
+          next unless nodes
+          this_node = nodes.find do |node|
+            node.last['fqdn'] == fqdn
           end
+          node_roles = this_node.last['node_roles']
+          roles = Set.new
+          roles.merge node_roles if node_roles.is_a? Array
+          role = data['role']
+          roles.add role if role
           @assign_hiera_to_roles[hiera_file] = roles
         rescue
           next
