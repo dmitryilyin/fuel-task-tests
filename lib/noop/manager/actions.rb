@@ -177,6 +177,7 @@ module Noop
       if options[:self_check]
         check_paths
         show_filters
+        show_library
         exit(0)
       end
 

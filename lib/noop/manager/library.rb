@@ -67,7 +67,7 @@ module Noop
       Noop::Utils.error "No #{Noop::Config.dir_path_modules_local} directory!" unless Noop::Config.dir_path_modules_local.directory?
       Noop::Config.dir_path_modules_local.find do |task_file|
         next unless task_file.file?
-        next unless task_file.fnmatch? '*tasks.yaml'
+        next unless task_file.to_s.end_with? 'tasks.yaml'
         begin
           tasks = YAML.load_file task_file
         rescue
@@ -154,7 +154,7 @@ module Noop
       @spec_run_metadata = {}
       Noop::Config.dir_path_task_spec.find do |spec_file|
         next unless spec_file.file?
-        next unless spec_file.fnmatch? '*_spec.rb'
+        next unless spec_file.to_s.end_with? '_spec.rb'
         spec_name = spec_file.relative_path_from(Noop::Config.dir_path_task_spec)
         spec_data = parse_spec_file spec_file
         @spec_run_metadata[spec_name] = spec_data if spec_data.any?

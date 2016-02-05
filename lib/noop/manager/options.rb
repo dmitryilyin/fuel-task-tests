@@ -104,7 +104,7 @@ module Noop
           ENV['SPEC_DEPLOYMENT_DIR'] = dir
         end
         opts.on('--dir_hiera_yamls DIR', 'Path to the folder with hiera files') do |dir|
-          ENV['SPEC_YAML_DIR'] = dir
+          ENV['SPEC_HIERA_DIR'] = dir
         end
         opts.on('--dir_facts_yamls DIR', 'Path to the folder with facts yaml files') do |dir|
           ENV['SPEC_FACTS_DIR'] = dir

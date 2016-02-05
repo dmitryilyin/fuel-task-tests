@@ -1,4 +1,4 @@
-require 'irb'
+require 'erb'
 require 'colorize'
 require 'rexml/document'
 
@@ -126,7 +126,7 @@ module Noop
       line += "#{task.file_base_spec.to_s.ljust max_length_spec + 1}"
       line += "#{task.file_base_facts.to_s.ljust max_length_facts + 1}"
       line += "#{task.file_base_hiera.to_s.ljust max_length_hiera + 1}"
-      puts line
+      output line
       output_task_examples task
     end
 
@@ -142,7 +142,7 @@ module Noop
         line = "  #{example_status_string status} #{description}"
         exception_message = example.fetch('exception', {}).fetch('message', nil)
         line += " (#{exception_message.colorize :cyan})" if exception_message
-        puts line
+        output line
       end
     end
 
@@ -220,6 +220,20 @@ module Noop
         options[:filter_examples] = [options[:filter_examples]] unless options[:filter_examples].is_a? Array
         output "Examples filter: #{options[:filter_examples].join ', '}"
       end
+    end
+
+    def show_library
+      template = <<-'eof'
+<%= '=' * 80 %>
+Tasks discovered: <%= task_file_names.length %>
+Specs discovered: <%= spec_file_names.length %>
+Hiera discovered: <%= hiera_file_names.length %>
+Facts discovered: <%= facts_file_names.length %>
+Tasks in graph metadata:  <%= task_graph_metadata.length %>
+Tasks with spec metadata: <%= spec_run_metadata.length %>
+Total tasks to run: <%= task_list.count %>
+      eof
+      output ERB.new(template, nil, '-').result(binding)
     end
 
     def check_paths

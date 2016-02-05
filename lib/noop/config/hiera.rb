@@ -10,7 +10,7 @@ module Noop
     # @return [Pathname]
     def self.dir_path_hiera
       return @dir_path_hiera if @dir_path_hiera
-      @dir_path_hiera = Noop::Utils.path_from_env 'SPEC_YAML_DIR'
+      @dir_path_hiera = Noop::Utils.path_from_env 'SPEC_HIERA_DIR', 'SPEC_YAML_DIR'
       return @dir_path_hiera if @dir_path_hiera
       @dir_path_hiera = dir_path_root + dir_name_hiera
     end
