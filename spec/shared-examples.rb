@@ -30,19 +30,19 @@ end
 def run_test(manifest_file, *args)
   file_name_spec =  manifest_file
   Noop::Config.log.progname = 'noop_spec'
-  task_object = Noop::Task.new file_name_spec
-  Noop::Utils.debug "RSPEC: #{task_object.inspect}"
+  $task = Noop::Task.new file_name_spec
+  Noop::Utils.debug "RSPEC: #{$task.inspect}"
 
   before(:all) do
-    task_object.setup_overrides
+    $task.setup_overrides
   end
 
   let(:task) do
-    task_object
+    $task
   end
 
   let(:facts) do
-    task.facts_data
+    $task.facts_data
   end
 
   include_examples 'compile'

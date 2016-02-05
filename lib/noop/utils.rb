@@ -32,7 +32,7 @@ module Noop
     def self.convert_to_yaml(value)
       value = value.to_s.chomp.strip
       value = convert_to_path value
-      value = value.sub_ext '.yaml' if value.extname == ''
+      value = value.sub /$/, '.yaml' unless value.extname =~ /\.yaml/i
       value
     end
 
@@ -57,7 +57,7 @@ module Noop
     end
 
     def self.run(*args)
-      debug "CMD: #{args.inspect} (PWD: #{Dir.getwd})"
+      debug "CMD: #{args.inspect}"
       system *args
     end
 

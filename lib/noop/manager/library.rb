@@ -203,7 +203,7 @@ module Noop
       line = line.split /\s*,\s*|\s+/
       line.map do |yaml|
         yaml = Pathname.new yaml
-        yaml = yaml.sub_ext '.yaml' if yaml.extname == ''
+        yaml = yaml.sub /$/, '.yaml' unless yaml.extname =~ /\.yaml/i
         yaml
       end
     end
