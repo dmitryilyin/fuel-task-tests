@@ -8,7 +8,7 @@ module Noop
     end
 
     def self.log_level
-      if ENV['SPEC_PUPPET_DEBUG']
+      if ENV['SPEC_TASK_DEBUG']
         Logger::DEBUG
       else
         Logger::WARN

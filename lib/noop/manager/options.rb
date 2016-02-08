@@ -15,7 +15,6 @@ module Noop
           @options.parallel_run = jobs.to_i
         end
         opts.on('-g', '--globals', 'Run all globals tasks and update saved globals YAML files') do |jobs|
-          @options.update_globals = true
           ENV['SPEC_UPDATE_GLOBALS'] = 'YES'
           options.filter_specs = [Noop::Config.spec_name_globals]
         end
@@ -23,22 +22,21 @@ module Noop
           @options.bundle_setup = true
         end
         opts.on('-B', '--bundle_exec', 'Use "bundle exec" to run rspec') do
-          @options.bundle_exec = true
           ENV['SPEC_BUNDLE_EXEC'] = 'YES'
         end
-        opts.on('-u', '--update-librarian', 'Run librarian-puppet update in the deployment directory prior to testing') do
+        opts.on('-l', '--update-librarian', 'Run librarian-puppet update in the deployment directory prior to testing') do
           @options.update_librarian_puppet = true
         end
-        opts.on('-r', '--reset-librarian', 'Reset puppet modules to librarian versions in the deployment directory prior to testing') do
+        opts.on('-L', '--reset-librarian', 'Reset puppet modules to librarian versions in the deployment directory prior to testing') do
           @options.reset_librarian_puppet = true
         end
         opts.on('-o', '--report_only_failed', 'Show only failed tasks and examples in the report') do
           @options.report_only_failed = true
         end
-        opts.on('-l', '--load_saved_reports', 'Read saved report JSON files from the previous run and show tasks report') do
+        opts.on('-r', '--load_saved_reports', 'Read saved report JSON files from the previous run and show tasks report') do
           @options.load_saved_reports = true
         end
-        opts.on('-L', '--run_failed_tasks', 'Run the task that have previously failed again') do
+        opts.on('-R', '--run_failed_tasks', 'Run the task that have previously failed again') do
           @options.run_failed_tasks = true
         end
         opts.on('-M', '--list_missing', 'List all task manifests without a spec file') do
@@ -77,19 +75,22 @@ module Noop
         # end
 
         opts.separator 'Debug options:'
-        opts.on('-C', '--console', 'Run PRY console') do
-          @options.console = true
-          ENV['SPEC_CONSOLE'] = 'YES'
+        opts.on('-c', '--task_console', 'Run PRY console') do
+          ENV['SPEC_TASK_CONSOLE'] = 'YES'
         end
-        opts.on('-d', '--debug', 'Show debug messages') do
-          @options.debug = true
+        opts.on('-C', '--rspec_console', 'Run PRY console in the ') do
+          ENV['SPEC_RSPEC_CONSOLE'] = 'YES'
+        end
+        opts.on('-d', '--task_debug', 'Show framework debug messages') do
+          ENV['SPEC_TASK_DEBUG'] = 'YES'
+        end
+        opts.on('-D', '--puppet_debug', 'Show Puppet debug messages') do
           ENV['SPEC_PUPPET_DEBUG'] = 'YES'
         end
-        opts.on('-D', '--debug_log FILE', 'Write debug messages to this files') do |file|
-          @options.debug_log = file
+        opts.on('--debug_log FILE', 'Write all debug messages to this files') do |file|
           ENV['SPEC_DEBUG_LOG'] = file
         end
-        opts.on('-c', '--self-check', 'Perform self-check procedures') do
+        opts.on('-t', '--self-check', 'Perform self-check and diagnostic procedures') do
           @options.self_check = true
         end
         opts.on('-p', '--pretend', 'Show which tasks will be run without actually running them') do
@@ -120,7 +121,7 @@ module Noop
         end
 
         opts.separator 'Spec options:'
-        opts.on('--catalog_show', 'Show catalog content debug output') do
+        opts.on('-A', '--catalog_show', 'Show catalog content debug output') do
           ENV['SPEC_CATALOG_SHOW'] = 'YES'
         end
         # opts.on('--catalog_save', 'Save catalog to the files instead of comparing them with the current catalogs') do
@@ -132,7 +133,7 @@ module Noop
         # opts.on('--spec_generate', 'Generate specs for catalogs') do
         #   ENV['SPEC_SPEC_GENERATE'] = 'YES'
         # end
-        opts.on('--spec_status', 'Show spec status blocks') do
+        opts.on('-a', '--spec_status', 'Show spec status blocks') do
           ENV['SPEC_SHOW_STATUS'] = 'YES'
         end
         # opts.on('--spec_coverage', 'Show spec coverage statistics') do

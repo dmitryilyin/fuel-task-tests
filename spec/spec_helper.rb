@@ -5,7 +5,7 @@ require 'rspec-puppet'
 require 'rspec-puppet-utils'
 require 'puppetlabs_spec_helper/module_spec_helper'
 
-require_relative '../lib/noop/task'
+require_relative '../lib/noop'
 
 # Add fixture lib dirs to LOAD_PATH. Work-around for PUP-3336
 if Puppet.version < '4.0.0'

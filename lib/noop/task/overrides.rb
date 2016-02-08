@@ -5,6 +5,7 @@ module Noop
       hiera_config_override
       puppet_debug_override if ENV['SPEC_PUPPET_DEBUG']
       setup_manifest
+      puppet_resource_scope_override
     end
 
     def setup_manifest
@@ -39,6 +40,18 @@ module Noop
         end
       end
       Hiera::Config.config = hiera_config
+    end
+
+    def puppet_resource_scope_override
+      Puppet::Parser::Resource.module_eval do
+        def initialize(*args)
+          raise ArgumentError, "Resources require a hash as last argument" unless args.last.is_a? Hash
+          raise ArgumentError, "Resources require a scope" unless args.last[:scope]
+          super
+          Noop.task.puppet_scope = scope
+          @source ||= scope.source
+        end
+      end
     end
 
     def puppet_debug_override

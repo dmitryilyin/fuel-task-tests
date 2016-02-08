@@ -1,10 +1,10 @@
 module Noop
   class Task
-    def initialize(spec, hiera=nil, facts=nil)
+    def initialize(spec=nil, hiera=nil, facts=nil)
       self.status = :pending
-      self.file_name_spec = Noop::Utils.convert_to_spec spec
-      self.file_name_hiera = hiera
-      self.file_name_facts = facts
+      self.file_name_spec = Noop::Utils.convert_to_spec spec if spec
+      self.file_name_hiera = hiera if hiera
+      self.file_name_facts = facts if facts
       self.pid = Process.pid
       self.thread = Thread.current.object_id
       @parallel = false

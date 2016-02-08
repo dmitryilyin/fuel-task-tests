@@ -55,17 +55,23 @@ module Noop
       filter.include? hiera
     end
 
-    def skip_globals(file_name_spec)
+    def skip_globals?(file_name_spec)
       return false unless file_name_spec == Noop::Config.spec_name_globals
       return true unless options[:filter_specs]
       not spec_included? file_name_spec
+    end
+
+    def spec_is_disabled?(file_name_spec)
+      file_name_spec = Noop::Utils.convert_to_path file_name_spec
+      spec_run_metadata.fetch(file_name_spec, {}).fetch(:disable, false)
     end
 
     def task_list
       return @task_list if @task_list
       @task_list = []
       spec_file_names.each do |file_name_spec|
-        next if skip_globals file_name_spec
+        next if spec_is_disabled? file_name_spec
+        next if skip_globals? file_name_spec
         next unless spec_included? file_name_spec
         get_spec_runs(file_name_spec).each do |run|
           next unless run[:hiera] and run[:facts]
@@ -164,9 +170,12 @@ module Noop
     end
 
     def main
-      if options[:console]
+      options
+
+      if ENV['SPEC_TASK_CONSOLE']
         require 'pry'
         binding.pry
+        exit(0)
       end
 
       if options[:list_missing]

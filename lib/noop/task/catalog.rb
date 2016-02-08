@@ -14,6 +14,9 @@ Manifest: <%= task.file_path_manifest %>
 Node:     <%= task.hiera_lookup 'fqdn' or '?' %>
 Role:     <%= task.hiera_lookup 'role' or '?' %>
 
+Puppet:   <%= Puppet.version %>
+Ruby:     <%= RUBY_VERSION %>
+
 Hiera hierarchy:
 <% task.hiera_hierarchy.each do |element| -%>
 * <%= element %>

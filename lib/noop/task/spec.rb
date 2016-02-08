@@ -2,6 +2,8 @@ module Noop
   class Task
     # @return [Pathname]
     def file_name_spec
+      return @file_name_spec if @file_name_spec
+      self.file_name_spec = Noop::Utils.path_from_env 'SPEC_FILE_NAME'
       @file_name_spec
     end
 
@@ -12,7 +14,9 @@ module Noop
 
     # @return [Pathname]
     def file_name_spec=(value)
+      return if value.nil?
       @file_name_spec = Noop::Utils.convert_to_spec value
+      @file_name_spec
     end
 
     # @return [Pathname]

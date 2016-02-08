@@ -60,6 +60,14 @@ module Noop
       file_paths
     end
 
+    def add_host_names(facts_data)
+      hostname = hiera_lookup 'node_name'
+      fqdn = hiera_lookup 'fqdn'
+      facts_data[:hostname] = hostname if hostname
+      facts_data[:l3_fqdn_hostname] = hostname if hostname
+      facts_data[:fqdn] = fqdn if fqdn
+    end
+
     # @return [Hash]
     def facts_data
       facts_data = {}
@@ -72,7 +80,18 @@ module Noop
           next
         end
       end
+      add_host_names facts_data
       facts_data
+    end
+    alias :ubuntu_facts :facts_data
+    alias :centos_facts :facts_data
+
+    def hostname
+      facts_data[:hostname]
+    end
+
+    def fqdn
+      facts_data[:fqdn]
     end
 
   end

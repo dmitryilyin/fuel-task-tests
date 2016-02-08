@@ -179,6 +179,9 @@ module Noop
           if line =~ /^\s*#\s*facts:\s*(.*)/
             task_spec_metadata[:facts] = get_list_of_yamls $1
           end
+          if line =~ /disable_spec/
+            task_spec_metadata[:disable] = true
+          end
 
           if line =~ /^\s*#\s*run:\s*(.*)/
             run_record = get_list_of_yamls $1

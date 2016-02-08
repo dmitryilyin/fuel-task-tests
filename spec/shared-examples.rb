@@ -5,7 +5,7 @@ end
 shared_examples 'show_catalog' do
   it 'shows catalog contents' do
     puts '=' * 80
-    puts task.catalog_dump self
+    puts Noop.task.catalog_dump self
     puts '=' * 80
   end
 end
@@ -13,7 +13,7 @@ end
 shared_examples 'status' do
   it 'shows status' do
     puts '=' * 80
-    puts task.status_report self
+    puts Noop.task.status_report self
     puts '=' * 80
   end
 end
@@ -28,27 +28,46 @@ end
 ###############################################################################
 
 def run_test(manifest_file, *args)
-  file_name_spec =  manifest_file
-  Noop::Config.log.progname = 'noop_spec'
-  $task = Noop::Task.new file_name_spec
-  Noop::Utils.debug "RSPEC: #{$task.inspect}"
+  Noop.task_spec = manifest_file unless Noop.task_spec
 
-  before(:all) do
-    $task.setup_overrides
-  end
+  Noop::Config.log.progname = 'noop_spec'
+  Noop::Utils.debug "RSPEC: #{Noop.task.inspect}"
+
+  include FuelRelationshipGraphMatchers
 
   let(:task) do
-    $task
+    Noop.task
+  end
+
+  before(:all) do
+    Noop.setup_overrides
   end
 
   let(:facts) do
-    $task.facts_data
+    Noop.facts_data
+  end
+
+  let (:catalog) do
+    catalog = subject
+    catalog = catalog.call if catalog.is_a? Proc
+  end
+
+  let (:ral) do
+    ral = catalog.to_ral
+    ral.finalize
+    ral
+  end
+
+  let (:graph) do
+    graph = Puppet::Graph::RelationshipGraph.new(Puppet::Graph::TitleHashPrioritizer.new)
+    graph.populate_from(ral)
+    graph
   end
 
   include_examples 'compile'
   include_examples 'status' if ENV['SPEC_SHOW_STATUS']
   include_examples 'show_catalog' if ENV['SPEC_CATALOG_SHOW']
-  include_examples 'console' if ENV['SPEC_CONSOLE']
+  include_examples 'console' if ENV['SPEC_RSPEC_CONSOLE']
 
   begin
     include_examples 'catalog'

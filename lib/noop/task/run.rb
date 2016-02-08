@@ -83,6 +83,7 @@ module Noop
       environment = {
           'SPEC_HIERA_NAME' => file_name_hiera.to_s,
           'SPEC_FACTS_NAME' => file_name_facts.to_s,
+          'SPEC_FILE_NAME' => file_name_spec.to_s,
       }
       command = "rspec #{file_path_spec.to_s} #{rspec_options} --format json --out #{file_path_report_json.to_s}"
       command = "bundle exec #{command}" if ENV['SPEC_BUNDLE_EXEC']
