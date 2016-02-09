@@ -1,77 +1,76 @@
 require 'optparse'
-require 'ostruct'
 
 module Noop
   class Manager
 
     def options
       return @options if @options
-      @options = OpenStruct.new
+      @options = {}
       options_defaults @options
 
       optparse = OptionParser.new do |opts|
         opts.separator 'Main options:'
         opts.on('-j', '--jobs JOBS', 'Parallel run RSpec jobs') do |jobs|
-          @options.parallel_run = jobs.to_i
+          @options[:parallel_run] = jobs.to_i
         end
         opts.on('-g', '--globals', 'Run all globals tasks and update saved globals YAML files') do |jobs|
           ENV['SPEC_UPDATE_GLOBALS'] = 'YES'
-          options.filter_specs = [Noop::Config.spec_name_globals]
+          options[:filter_specs] = [Noop::Config.spec_name_globals]
         end
         opts.on('-b', '--bundle_setup', 'Setup Ruby environment using Bundle') do
-          @options.bundle_setup = true
+          @options[:bundle_setup] = true
         end
         opts.on('-B', '--bundle_exec', 'Use "bundle exec" to run rspec') do
           ENV['SPEC_BUNDLE_EXEC'] = 'YES'
         end
         opts.on('-l', '--update-librarian', 'Run librarian-puppet update in the deployment directory prior to testing') do
-          @options.update_librarian_puppet = true
+          @options[:update_librarian_puppet] = true
         end
         opts.on('-L', '--reset-librarian', 'Reset puppet modules to librarian versions in the deployment directory prior to testing') do
-          @options.reset_librarian_puppet = true
+          @options[:reset_librarian_puppet] = true
         end
         opts.on('-o', '--report_only_failed', 'Show only failed tasks and examples in the report') do
-          @options.report_only_failed = true
+          @options[:report_only_failed] = true
         end
         opts.on('-r', '--load_saved_reports', 'Read saved report JSON files from the previous run and show tasks report') do
-          @options.load_saved_reports = true
+          @options[:load_saved_reports] = true
         end
         opts.on('-R', '--run_failed_tasks', 'Run the task that have previously failed again') do
-          @options.run_failed_tasks = true
+          @options[:run_failed_tasks] = true
         end
         opts.on('-M', '--list_missing', 'List all task manifests without a spec file') do
-          @options.list_missing = true
+          @options[:list_missing] = true
         end
-        opts.on('-x', '--xunit_report FILE', 'Save report in xUnit format to this file') do |file|
-          @options.xunit_report = file
+        opts.on('-x', '--xunit_report', 'Save report in xUnit format to a file') do
+          @options[:xunit_report] = true
         end
 
         opts.separator 'List options:'
         opts.on('-Y', '--list_hiera', 'List all hiera yaml files') do
-          @options.list_hiera = true
+          @options[:list_hiera] = true
         end
         opts.on('-S', '--list_specs', 'List all task spec files') do
-          @options.list_specs = true
+          @options[:list_specs] = true
         end
         opts.on('-F', '--list_facts', 'List all facts yaml files') do
-          @options.list_facts = true
+          @options[:list_facts] = true
         end
         opts.on('-T', '--list_tasks', 'List all task manifest files') do
-          @options.list_tasks = true
+          @options[:list_tasks] = true
         end
 
         opts.separator 'Filter options:'
         opts.on('-s', '--specs SPEC1,SPEC2', Array, 'Run only these spec files. Example: "hosts/hosts_spec.rb,apache/apache_spec.rb"') do |specs|
-          @options.filter_specs = import_specs_list specs
+          @options[:filter_specs] = import_specs_list specs
         end
         opts.on('-y', '--yamls YAML1,YAML2', Array, 'Run only these hiera yamls. Example: "controller.yaml,compute.yaml"') do |yamls|
-          @options.filter_hiera = import_yamls_list yamls
+          @options[:filter_hiera] = import_yamls_list yamls
         end
         opts.on('-f', '--facts FACTS1,FACTS2', Array, 'Run only these facts yamls. Example: "ubuntu.yaml,centos.yaml"') do |yamls|
-          @options.filter_facts = import_yamls_list yamls
+          @options[:filter_facts] = import_yamls_list yamls
         end
         # opts.on('-e', '--examples STR1,STR2', Array, 'Run only these spec examples. Example: "should compile"') do |examples|
-        #   @options.filter_examples = examples
+        #   @options[:filter_examples] = examples
         # end
 
         opts.separator 'Debug options:'
@@ -91,10 +90,10 @@ module Noop
           ENV['SPEC_DEBUG_LOG'] = file
         end
         opts.on('-t', '--self-check', 'Perform self-check and diagnostic procedures') do
-          @options.self_check = true
+          @options[:self_check] = true
         end
         opts.on('-p', '--pretend', 'Show which tasks will be run without actually running them') do
-          @options.pretend = true
+          @options[:pretend] = true
         end
 
         opts.separator 'Path options:'
